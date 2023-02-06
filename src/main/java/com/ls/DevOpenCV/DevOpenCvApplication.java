@@ -1,5 +1,7 @@
 package com.ls.DevOpenCV;
 
+import net.sourceforge.tess4j.ITesseract;
+import net.sourceforge.tess4j.OCRResult;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import nu.pattern.OpenCV;
@@ -24,7 +26,7 @@ public class DevOpenCvApplication {
 	public static final String DATA_PATH = "/usr/share/tessdata/";
 	public static final int ENGINE_MODE = 1;
 	public static final int PAGE_MODE = 1;
-	public static final String LANG = "por_cup";
+	public static final String LANG = "por";
 
 
 
@@ -32,8 +34,8 @@ public class DevOpenCvApplication {
 		//SpringApplication.run(DevOpenCvApplication.class, args);
 		opencv("/home/luiz/Downloads/test/c1.jpeg");
 		computeSkew("/home/luiz/Downloads/test/grey.png");
-		doOcr("/home/luiz/Downloads/test/grey.png");
-
+		//doOcr("/home/luiz/Downloads/test/grey.png");
+		getConfidence("/home/luiz/Downloads/test/c1.jpeg");
 
 
 	}
@@ -87,6 +89,30 @@ public class DevOpenCvApplication {
 
 	}
 
+	public static void getConfidence(String inFile){
+
+		Mat mat = Imgcodecs.imread(inFile);
+		BufferedImage bufferedImage = mat2Img(mat);
+		Tesseract tesseract = new Tesseract();
+		tesseract.setOcrEngineMode(ENGINE_MODE);
+		tesseract.setPageSegMode(PAGE_MODE);
+		tesseract.setLanguage(LANG);
+		tesseract.setDatapath(DATA_PATH);
+
+		List<ITesseract.RenderedFormat> renderedFormats = new ArrayList<>();
+		renderedFormats.add(ITesseract.RenderedFormat.TEXT);
+		OCRResult ocrResult;
+		try {
+			ocrResult = tesseract.createDocumentsWithResults(bufferedImage, "", "",renderedFormats, 1 );
+		} catch (TesseractException e) {
+			throw new RuntimeException(e);
+		}
+
+		System.out.println("Confidence: " + ocrResult.getConfidence());
+		System.out.println(ocrResult.getWords().toString());
+
+	}
+
 	public static void doOcr(String inFile){
 
 		Tesseract tesseract = new Tesseract();
@@ -95,6 +121,7 @@ public class DevOpenCvApplication {
 		tesseract.setPageSegMode(PAGE_MODE);
 		tesseract.setLanguage(LANG);
 		tesseract.setDatapath(DATA_PATH);
+
 
 		/*byte[] imageByte = Base64.getDecoder().decode("");
 		ByteArrayInputStream bis = new ByteArrayInputStream(imageByte);
