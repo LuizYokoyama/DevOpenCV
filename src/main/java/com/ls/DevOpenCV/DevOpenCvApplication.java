@@ -38,7 +38,7 @@ public class DevOpenCvApplication {
 		//opencv("/home/luiz/Downloads/test/c12.jpg");
 		//computeSkew("/home/luiz/Downloads/test/gray.png");
 		//doOcr("/home/luiz/Downloads/test/c4.jpg");
-		brightnessAndContrast("/home/luiz/Downloads/test/blur.png", 1.45, 50);
+		brightnessAndContrast("/home/luiz/Downloads/test/blur.png", 1.5, 30);
 		//getConfidence("/home/luiz/Downloads/test/gray.png");
 		//getConfidence("/home/luiz/Downloads/test/c12.jpg");
 		getConfidence("/home/luiz/Downloads/test/bright_contr.png");
