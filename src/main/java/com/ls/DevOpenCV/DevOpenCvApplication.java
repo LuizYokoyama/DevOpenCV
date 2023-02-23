@@ -16,6 +16,7 @@ import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import static org.opencv.imgproc.Imgproc.THRESH_BINARY;
 
@@ -26,24 +27,70 @@ public class DevOpenCvApplication {
 	public static final String DATA_PATH = "/usr/share/tessdata/";
 	public static final int ENGINE_MODE = 1;
 	public static final int PAGE_MODE = 1;
-	public static final String LANG = "por";
+	public static final String LANG = "por_cup";
 
 
 
 	public static void main(String[] args) {
-		//SpringApplication.run(DevOpenCvApplication.class, args);
-		opencv("/home/luiz/Downloads/test/c1.jpeg");
-		computeSkew("/home/luiz/Downloads/test/grey.png");
-		//doOcr("/home/luiz/Downloads/test/grey.png");
-		getConfidence("/home/luiz/Downloads/test/c1.jpeg");
 
+		OpenCV.loadLocally();
+
+		//opencv("/home/luiz/Downloads/test/c12.jpg");
+		//computeSkew("/home/luiz/Downloads/test/gray.png");
+		//doOcr("/home/luiz/Downloads/test/c4.jpg");
+		brightnessAndContrast("/home/luiz/Downloads/test/blur.png", 1.45, 50);
+		//getConfidence("/home/luiz/Downloads/test/gray.png");
+		//getConfidence("/home/luiz/Downloads/test/c12.jpg");
+		getConfidence("/home/luiz/Downloads/test/bright_contr.png");
+
+
+	}
+
+
+
+
+		private static byte saturate(double val) {
+			int iVal = (int) Math.round(val);
+			iVal = iVal > 255 ? 255 : (iVal < 0 ? 0 : iVal);
+			return (byte) iVal;
+		}
+
+
+		/*
+		alpha value [1.0-3.0]: contrast control
+		beta value [0-100]: brightness control
+		*/
+		public static void brightnessAndContrast(String imagePath, double alpha, int beta) {
+		Mat image = Imgcodecs.imread(imagePath);
+		if (image.empty()) {
+			System.out.println("Empty image: " + imagePath);
+			System.exit(0);
+		}
+		Mat newImage = Mat.zeros(image.size(), image.type());
+
+		byte[] imageData = new byte[(int) (image.total()*image.channels())];
+		image.get(0, 0, imageData);
+		byte[] newImageData = new byte[(int) (newImage.total()*newImage.channels())];
+		for (int y = 0; y < image.rows(); y++) {
+			for (int x = 0; x < image.cols(); x++) {
+				for (int c = 0; c < image.channels(); c++) {
+					double pixelValue = imageData[(y * image.cols() + x) * image.channels() + c];
+					pixelValue = pixelValue < 0 ? pixelValue + 256 : pixelValue;
+					newImageData[(y * image.cols() + x) * image.channels() + c]
+							= saturate(alpha * pixelValue + beta);
+				}
+			}
+		}
+		newImage.put(0, 0, newImageData);
+		MatOfInt params = new MatOfInt(Imgcodecs.IMWRITE_PNG_COMPRESSION);
+		Imgcodecs.imwrite("/home/luiz/Downloads/test/bright_contr.png", newImage, params);
 
 	}
 
 
 	public static void opencv(String inFile){
 
-		OpenCV.loadLocally();
+
 
 
 		Mat original = Imgcodecs.imread(inFile);
@@ -56,15 +103,15 @@ public class DevOpenCvApplication {
 		MatOfInt params = new MatOfInt(Imgcodecs.IMWRITE_PNG_COMPRESSION);
 
 		Imgproc.cvtColor(original, gray, Imgproc.COLOR_RGB2GRAY, 0);
-		Imgcodecs.imwrite("/home/luiz/Downloads/test/grey.png", gray, params);
+		Imgcodecs.imwrite("/home/luiz/Downloads/test/gray.png", gray, params);
 
 		Imgproc.GaussianBlur(gray, blur, new Size(3, 3), 3);
 		Imgcodecs.imwrite("/home/luiz/Downloads/test/blur.png", blur, params);
 
-		Core.addWeighted(blur, 0.5, blur, 0.5, 0, unSharp);
+		Core.addWeighted(blur, 0.5, blur, 0.5, 1, unSharp);
 		Imgcodecs.imwrite("/home/luiz/Downloads/test/unSharp.png", unSharp, params);
 
-		Imgproc.threshold(unSharp,binary,50,255, THRESH_BINARY);
+		Imgproc.threshold(unSharp,binary,200,255, THRESH_BINARY);
 		Imgcodecs.imwrite("/home/luiz/Downloads/test/binary.png", binary, params);
 
 		Mat grad_x = new Mat();
@@ -84,7 +131,6 @@ public class DevOpenCvApplication {
 		Core.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, detectedEdges);
 		Imgcodecs.imwrite("/home/luiz/Downloads/test/detectedEdges.png", detectedEdges, params);
 
-		//Imgcodecs.imwrite("/home/luiz/Downloads/cupom3.png", gray, params);
 
 
 	}
