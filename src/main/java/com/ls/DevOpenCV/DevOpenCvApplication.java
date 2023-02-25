@@ -27,7 +27,7 @@ public class DevOpenCvApplication {
 	public static final String DATA_PATH = "/usr/share/tessdata/";
 	public static final int ENGINE_MODE = 1;
 	public static final int PAGE_MODE = 1;
-	public static final String LANG = "por_cup";
+	public static final String LANG = "por_cup2";
 
 
 
@@ -35,18 +35,19 @@ public class DevOpenCvApplication {
 
 		OpenCV.loadLocally();
 
-		//opencv("/home/luiz/Downloads/test/c12.jpg");
+		//opencv("/home/luiz/Downloads/test/c10.jpg");
 		//computeSkew("/home/luiz/Downloads/test/gray.png");
 		//doOcr("/home/luiz/Downloads/test/c4.jpg");
 		brightnessAndContrast("/home/luiz/Downloads/test/blur.png", 1.5, 30);
 		//getConfidence("/home/luiz/Downloads/test/gray.png");
-		//getConfidence("/home/luiz/Downloads/test/c12.jpg");
+		getConfidence("/home/luiz/Downloads/test/c10.jpg");
 		getConfidence("/home/luiz/Downloads/test/bright_contr.png");
+
+		//filterAllFiles();
+
 
 
 	}
-
-
 
 
 		private static byte saturate(double val) {
@@ -60,10 +61,10 @@ public class DevOpenCvApplication {
 		alpha value [1.0-3.0]: contrast control
 		beta value [0-100]: brightness control
 		*/
-		public static void brightnessAndContrast(String imagePath, double alpha, int beta) {
-		Mat image = Imgcodecs.imread(imagePath);
+		public static void brightnessAndContrast(String inFile, double alpha, int beta) {
+		Mat image = Imgcodecs.imread(inFile);
 		if (image.empty()) {
-			System.out.println("Empty image: " + imagePath);
+			System.out.println("Empty image: " + inFile);
 			System.exit(0);
 		}
 		Mat newImage = Mat.zeros(image.size(), image.type());
@@ -87,10 +88,46 @@ public class DevOpenCvApplication {
 
 	}
 
+	public static void complexFilterImage(String inFile, String path, double alpha, int beta){
+
+		Mat image = Imgcodecs.imread(path+ "/" + inFile);
+		Imgproc.cvtColor(image, image, Imgproc.COLOR_RGB2GRAY, 0);
+		//Imgproc.GaussianBlur(image, image, new Size(3, 3), 3);
+
+		Mat newImage = Mat.zeros(image.size(), image.type());
+
+		byte[] imageData = new byte[(int) (image.total()*image.channels())];
+		image.get(0, 0, imageData);
+		byte[] newImageData = new byte[(int) (newImage.total()*newImage.channels())];
+		for (int y = 0; y < image.rows(); y++) {
+			for (int x = 0; x < image.cols(); x++) {
+				for (int c = 0; c < image.channels(); c++) {
+					double pixelValue = imageData[(y * image.cols() + x) * image.channels() + c];
+					pixelValue = pixelValue < 0 ? pixelValue + 256 : pixelValue;
+					newImageData[(y * image.cols() + x) * image.channels() + c]
+							= saturate(alpha * pixelValue + beta);
+				}
+			}
+		}
+		newImage.put(0, 0, newImageData);
+		MatOfInt params = new MatOfInt(Imgcodecs.IMWRITE_PNG_COMPRESSION);
+		Imgcodecs.imwrite("/home/luiz/Downloads/test/test2/"  + inFile, newImage, params);
+
+	}
+
+
+
+	public static void filterAllFiles(){
+
+			for (int i = 1; i <= 537; i++){
+				complexFilterImage(i + ".tif", "/home/luiz/dev/tesstrain-main/data/por_cup-ground-truth", 1.2, 20);
+		}
+
+	}
+
+
 
 	public static void opencv(String inFile){
-
-
 
 
 		Mat original = Imgcodecs.imread(inFile);
