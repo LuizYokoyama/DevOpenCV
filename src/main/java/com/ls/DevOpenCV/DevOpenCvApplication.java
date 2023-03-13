@@ -27,7 +27,7 @@ public class DevOpenCvApplication {
 	public static final String DATA_PATH = "/usr/share/tessdata/";
 	public static final int ENGINE_MODE = 1;
 	public static final int PAGE_MODE = 1;
-	public static final String LANG = "por_cup2";
+	public static final String LANG = "por_cup5";
 
 
 
@@ -35,15 +35,15 @@ public class DevOpenCvApplication {
 
 		OpenCV.loadLocally();
 
-		//opencv("/home/luiz/Downloads/test/c10.jpg");
+		//opencv("/home/luiz/Downloads/test/c15.jpg");
 		//computeSkew("/home/luiz/Downloads/test/gray.png");
-		//doOcr("/home/luiz/Downloads/test/c4.jpg");
-		brightnessAndContrast("/home/luiz/Downloads/test/blur.png", 1.5, 30);
+		doOcr("/home/luiz/Downloads/test/c15r.png");
+		//brightnessAndContrast("/home/luiz/Downloads/test/blur.png", 1.1, 1);
 		//getConfidence("/home/luiz/Downloads/test/gray.png");
-		getConfidence("/home/luiz/Downloads/test/c10.jpg");
-		getConfidence("/home/luiz/Downloads/test/bright_contr.png");
+		getConfidence("/home/luiz/Downloads/test/c15r.png");
+		//getConfidence("/home/luiz/Downloads/test/bright_contr.png");
 
-		//filterAllFiles();
+		filterAllFiles();
 
 
 
@@ -92,7 +92,7 @@ public class DevOpenCvApplication {
 
 		Mat image = Imgcodecs.imread(path+ "/" + inFile);
 		Imgproc.cvtColor(image, image, Imgproc.COLOR_RGB2GRAY, 0);
-		//Imgproc.GaussianBlur(image, image, new Size(3, 3), 3);
+		Imgproc.GaussianBlur(image, image, new Size(3, 3), 3);
 
 		Mat newImage = Mat.zeros(image.size(), image.type());
 
@@ -120,7 +120,7 @@ public class DevOpenCvApplication {
 	public static void filterAllFiles(){
 
 			for (int i = 1; i <= 537; i++){
-				complexFilterImage(i + ".tif", "/home/luiz/dev/tesstrain-main/data/por_cup-ground-truth", 1.2, 20);
+				complexFilterImage(i + ".tif", "/home/luiz/dev/tesstrain-main/data/por_cup-ground-truth", 1.5, 30);
 		}
 
 	}
